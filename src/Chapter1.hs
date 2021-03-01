@@ -215,7 +215,7 @@ True :: Bool
 'a' :: Char
 
 >>> :t 42
-42 : Num a -> a -> a
+42 :: Num p => p
 
 A pair of boolean and char:
 >>> :t (True, 'x')
@@ -303,44 +303,44 @@ expressions in GHCi
   functions and operators first. Remember this from the previous task? ;)
 
 >>> 1 + 2
-1 + 2 :: Num a => a
+3
 
 >>> 10 - 15
-10 - 15 :: Num a => a
+-5
 
 >>> 10 - (-5)  -- negative constants require ()
-<INSERT THE RESULT INSTEAD OF THE TEXT>
+15
 
 >>> (3 + 5) < 10
-(3 + 5) < 10 :: Bool
+True
 
 >>> True && False
-True && False :: Bool
+False
 
 >>> 10 < 20 || 20 < 5
-10 < 20 || 20 < 5 :: Bool
+True
 
 >>> 2 ^ 10  -- power
-2 ^ 10 :: Num a => a
+1024
 
 >>> not False
-not False :: Bool
+True
 
 >>> div 20 3  -- integral division
-div 20 3 :: Integral a => a
+6
 
 >>> mod 20 3  -- integral division remainder
-mod 20 3 :: Integral a => a
+2
 
 >>> max 4 10
-max 4 10 :: (Ord a, Num a) => a
+10
 
 >>> min 5 (max 1 2)
-min 5 (max 1 2) :: (Ord a, Num a) => a
+2
 
 
 >>> max (min 1 10) (min 5 7)
-max (min 1 10) (min 5 7) :: (Ord a, Num a) => a
+5
 
 Because Haskell is a __statically-typed__ language, you see an error each time
 you try to mix values of different types in situations where you are not
@@ -494,7 +494,9 @@ Implement a function that returns the last digit of a given number.
   whether it works for you!
 -}
 lastDigit :: Integral a => a -> a
-lastDigit n = mod n 10
+lastDigit n
+    | n >= 0 = mod n 10
+    | otherwise = mod (-n) 10
 
 
 {- |
@@ -560,12 +562,10 @@ Casual reminder about adding top-level type signatures for all functions :)
 
 mid :: Ord a => a -> a -> a -> a
 mid x y z
-    | z > y && y > x = y
-    | x > y && y > z = y
-    | y > z && z > x = z
-    | x > z && z > y = z
-    | y > x && x > z = x
-    | z > x && x > y = y
+    | x >= y && x > z = max y z
+    | y >= z && y > x = max x z
+    | z >= x && z > y = max x y
+    |otherwise = x
 
 {- |
 =⚔️= Task 8
@@ -651,10 +651,10 @@ specifying complex expressions.
 -}
 
 sumLast2 :: Integral a => a -> a
-sumLast2 n = 
-    let onesDigit = mod n 10
-        tensDigit = (mod n 100) `div` 10
-    in tensDigit + onesDigit
+sumLast2 n = onesDigit + tensDigit
+  where
+    onesDigit = if n >= 0 then mod n 10 else mod (-n) 10
+    tensDigit = if n >= 0 then (mod n 100) `div` 10 else (mod (-n) 100) `div` 10
 
 
 {- |
@@ -675,10 +675,12 @@ You need to use recursion in this task. Feel free to return to it later, if you
 aren't ready for this boss yet!
 -}
 
-firstDigit :: Integral a => a -> a
+
 firstDigit n
+    | n < 0 = firstDigit (-n)
     | n < 10 = n
     | otherwise = firstDigit (n `div` 10)
+
 
 
 {-
