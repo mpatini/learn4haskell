@@ -39,7 +39,7 @@ Now, if you are ready, bring it on!
 -}
 
 module Chapter2 where
-import Data.List
+
 
 {-
 =🛡= Imports
@@ -352,7 +352,7 @@ ghci> :l src/Chapter2.hs
 
 subList :: Int -> Int -> [a] -> [a]
 subList a b xs
-    | b > length xs - 1 = []
+    | b > length xs - 1 = subList a (length xs - 1) xs
     | a < 0 || b < 0 || a > b = []
     | otherwise = fst (splitAt (b-a+1) (snd (splitAt a xs)))
 
@@ -368,6 +368,7 @@ Implement a function that returns only the first half of a given list.
 "b"
 -}
 -- PUT THE FUNCTION TYPE IN HERE
+firstHalf :: [a] -> [a]
 firstHalf l = subList 0 b l
   where b = ((length l) `div` 2) - 1
 
@@ -755,7 +756,8 @@ value of the element itself
 🕯 HINT: Use combination of 'map' and 'replicate'
 -}
 smartReplicate :: [Int] -> [Int]
-smartReplicate l = error "smartReplicate: Not implemented!"
+smartReplicate l =
+    concat (map (\x -> replicate x x) l)
 
 {- |
 =⚔️= Task 9
@@ -768,7 +770,9 @@ the list with only those lists that contain a passed element.
 
 🕯 HINT: Use the 'elem' function to check whether an element belongs to a list
 -}
-contains = error "contains: Not implemented!"
+contains :: (Foldable t, Eq a) => a -> [t a] -> [t a]
+contains e xs =
+  filter (elem e) xs
 
 
 {- |
@@ -808,13 +812,15 @@ Let's now try to eta-reduce some of the functions and ensure that we
 mastered the skill of eta-reducing.
 -}
 divideTenBy :: Int -> Int
-divideTenBy x = div 10 x
+divideTenBy = div 10
 
 -- TODO: type ;)
-listElementsLessThan x l = filter (< x) l
+listElementsLessThan :: Ord a => a -> [a] -> [a]
+listElementsLessThan x = filter (< x)
 
 -- Can you eta-reduce this one???
-pairMul xs ys = zipWith (*) xs ys
+pairMul :: [Integer] -> [Integer] -> [Integer]
+pairMul = zipWith (*)
 
 {- |
 =🛡= Lazy evaluation
@@ -869,7 +875,15 @@ list.
 
 🕯 HINT: Use the 'cycle' function
 -}
-rotate = error "rotate: Not implemented!"
+rotate :: Int -> [a] -> [a]
+rotate _ [] = []
+rotate x xs
+  | x < 0 = []
+  | x > length xs = rotate (x `mod` (length xs)) xs
+  | otherwise = end ++ start
+  where
+    end = drop x xs
+    start = fst (splitAt x xs)
 
 {- |
 =💣= Task 12*
@@ -885,7 +899,9 @@ and reverses it.
   function, but in this task, you need to implement it manually. No
   cheating!
 -}
-rewind = error "rewind: Not Implemented!"
+rewind :: [a] -> [a]
+rewind [] = []
+rewind xs = [last xs] ++ rewind (init xs)
 
 
 {-
